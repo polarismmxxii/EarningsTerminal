@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indonesian Stocks - 6M 2026 vs 2025 Financial Data</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #4ade80;
+      --red: #f87171;
+      --header-bg: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 1.5rem;
+      min-height: 100vh;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    header {
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input[type="search"] {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      width: 260px;
+      outline: none;
+    }
+    input[type="search"]:focus { border-color: var(--accent); }
+    select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .stats {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .stat { background: var(--card); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border); }
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th {
+      background: #0f172a;
+      color: var(--muted);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.75rem 0.9rem;
+      position: sticky;
+      top: 0;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid var(--border);
+    }
+    th:hover { color: var(--accent); }
+    th.sorted-asc::after { content: " ▲"; font-size: 0.7em; }
+    th.sorted-desc::after { content: " ▼"; font-size: 0.7em; }
+    td {
+      padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tr:hover td { background: rgba(56, 189, 248, 0.08); }
+    .ticker { font-weight: 700; color: var(--accent); }
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+    .company { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+    footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    @media (max-width: 640px) {
+      body { padding: 1rem; }
+      h1 { font-size: 1.25rem; }
+      input[type="search"] { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Indonesian Stocks Financial Data</h1>
+        <div class="subtitle">6-Month 2026 vs 6-Month 2025 · Revenue, Profit, Valuation Metrics</div>
+      </div>
+      <div class="controls">
+        <input type="search" id="search" placeholder="Search ticker or company..." autocomplete="off">
+        <select id="sectorFilter">
+          <option value="">All Sectors</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="table-wrapper">
+      <table id="stockTable">
+        <thead>
+          <tr>
+            <th data-col="Ticker">Ticker</th>\n            <th data-col="Company Name">Company Name</th>\n            <th data-col="Sector">Sector</th>\n            <th data-col="Currency">Currency</th>\n            <th data-col="Revenue 6M26">Revenue 6M26</th>\n            <th data-col="Revenue 6M25">Revenue 6M25</th>\n            <th data-col="Net Profit 6M26">Net Profit 6M26</th>\n            <th data-col="Net Profit 6M25">Net Profit 6M25</th>\n            <th data-col="Last Prc">Last Prc</th>\n            <th data-col="PER">PER</th>\n            <th data-col="PBV">PBV</th>\n            <th data-col="ROA">ROA</th>\n            <th data-col="ROE">ROE</th>\n          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      Data sourced from public Google Sheet · Generated for sharing · Sort by clicking column headers
+    </footer>
+  </div>
+
+  <script>
+    const rawData = [{"Ticker": "EAST", "Company Name": "Eastparc Hotel Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "44,783", "Revenue 6M25": "44,350", "Net Profit 6M26": "16,955", "Net Profit 6M25": "12,623", "Last Prc": "90", "PER": "11", "PBV": "0.8", "ROA": "7.00%", "ROE": "7.40%"}, {"Ticker": "WSBP", "Company Name": "Waskita Beton Precast Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "808,068", "Revenue 6M25": "732,654", "Net Profit 6M26": "-285,591", "Net Profit 6M25": "-237", "Last Prc": "14", "PER": "-1.4", "PBV": "-0.4", "ROA": "-19.60%", "ROE": "25.50%"}, {"Ticker": "MSIE", "Company Name": "Multisarana Intan Eduka Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "3,589", "Revenue 6M25": "3,373", "Net Profit 6M26": "578", "Net Profit 6M25": "-466", "Last Prc": "94", "PER": "118.7", "PBV": "1.2", "ROA": "0.90%", "ROE": "1.00%"}, {"Ticker": "WSKT", "Company Name": "Waskita Karya (Persero) Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "4,916,406", "Revenue 6M25": "3,101,933", "Net Profit 6M26": "-1,917,739", "Net Profit 6M25": "-2,309,508", "Last Prc": "202", "PER": "-1.5", "PBV": "-2", "ROA": "-5.60%", "ROE": "129.80%"}, {"Ticker": "ASDM", "Company Name": "Asuransi Dayin Mitra Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "700,617", "Revenue 6M25": "576,583", "Net Profit 6M26": "10,847", "Net Profit 6M25": "8,683", "Last Prc": "498", "PER": "8.8", "PBV": "0.5", "ROA": "1.80%", "ROE": "6.00%"}, {"Ticker": "MYTX", "Company Name": "Asia Pacific Investama Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "508,212", "Revenue 6M25": "490,548", "Net Profit 6M26": "57,949", "Net Profit 6M25": "-14,820", "Last Prc": "41", "PER": "2.7", "PBV": "-0.6", "ROA": "3.30%", "ROE": "-21.70%"}, {"Ticker": "BBTN", "Company Name": "Bank Tabungan Negara (Persero) Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "16,331,530", "Revenue 6M25": "18,500,696", "Net Profit 6M26": "2,402,212", "Net Profit 6M25": "1,706,389", "Last Prc": "1,195", "PER": "3.5", "PBV": "0.4", "ROA": "0.90%", "ROE": "12.80%"}, {"Ticker": "NPGF", "Company Name": "Nusa Palapa Gemilang Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "155,913", "Revenue 6M25": "71,568", "Net Profit 6M26": "2,112", "Net Profit 6M25": "1,422", "Last Prc": "60", "PER": "46", "PBV": "0.8", "ROA": "1.00%", "ROE": "1.80%"}, {"Ticker": "FORE", "Company Name": "Fore Kopi Indonesia Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "1,004,935", "Revenue 6M25": "662,373", "Net Profit 6M26": "56,489", "Net Profit 6M25": "42,031", "Last Prc": "620", "PER": "48.9", "PBV": "7.5", "ROA": "9.00%", "ROE": "15.30%"}, {"Ticker": "SNLK", "Company Name": "Sunter Lakeside Hotel Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "21,119", "Revenue 6M25": "18,525", "Net Profit 6M26": "-2,586", "Net Profit 6M25": "-5,582", "Last Prc": "220", "PER": "-19.1", "PBV": "0.6", "ROA": "-2.50%", "ROE": "-3.20%"}, {"Ticker": "BOBA", "Company Name": "Formosa Ingredient Factory Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "100,638", "Revenue 6M25": "83,749", "Net Profit 6M26": "10,807", "Net Profit 6M25": "8,206", "Last Prc": "234", "PER": "12.5", "PBV": "1.6", "ROA": "10.70%", "ROE": "12.80%"}, {"Ticker": "PTPP", "Company Name": "PP (Persero) Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "5,957,765", "Revenue 6M25": "6,709,177", "Net Profit 6M26": "193,468", "Net Profit 6M25": "65,249", "Last Prc": "198", "PER": "3.2", "PBV": "0.4", "ROA": "0.90%", "ROE": "11.40%"}, {"Ticker": "ARNA", "Company Name": "Arwana Citramulia Tbk.", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "1,530,294", "Revenue 6M25": "1,423,498", "Net Profit 6M26": "220,689", "Net Profit 6M25": "204,166", "Last Prc": "486", "PER": "7.6", "PBV": "1.9", "ROA": "15.90%", "ROE": "24.80%"}, {"Ticker": "FASW", "Company Name": "Fajar Surya Wisesa Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "4,352,538", "Revenue 6M25": "4,018,347", "Net Profit 6M26": "87,662", "Net Profit 6M25": "-491,664", "Last Prc": "5,275", "PER": "96.9", "PBV": "2.9", "ROA": "1.40%", "ROE": "3.00%"}, {"Ticker": "ADHI", "Company Name": "Adhi Karya (Persero) Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "3,112,465", "Revenue 6M25": "3,812,310", "Net Profit 6M26": "8,493", "Net Profit 6M25": "7,545", "Last Prc": "159", "PER": "78.7", "PBV": "0.5", "ROA": "0.10%", "ROE": "0.60%"}, {"Ticker": "BBSS", "Company Name": "Bumi Benowo Sukses Sejahtera Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "303", "Revenue 6M25": "342", "Net Profit 6M26": "-627", "Net Profit 6M25": "-623", "Last Prc": "94", "PER": "-359.8", "PBV": "1.8", "ROA": "-0.50%", "ROE": "-0.50%"}, {"Ticker": "PPRO", "Company Name": "PP Properti Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "171,188", "Revenue 6M25": "142,242", "Net Profit 6M26": "-201,716", "Net Profit 6M25": "47,185", "Last Prc": "15", "PER": "-2.3", "PBV": "0.2", "ROA": "-3.80%", "ROE": "-7.50%"}, {"Ticker": "PPRE", "Company Name": "PP Presisi Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "2,228,535", "Revenue 6M25": "1,648,425", "Net Profit 6M26": "-162,795", "Net Profit 6M25": "4,626", "Last Prc": "101", "PER": "-3.2", "PBV": "1.1", "ROA": "-5.20%", "ROE": "-35.10%"}, {"Ticker": "BLOG", "Company Name": "Trimitra Trans Persada Tbk.", "Sector": "TLOG", "Currency": "IDR", "Revenue 6M26": "732,875", "Revenue 6M25": "626,477", "Net Profit 6M26": "77,547", "Net Profit 6M25": "71,081", "Last Prc": "342", "PER": "7.5", "PBV": "1.8", "ROA": "13.60%", "ROE": "24.70%"}, {"Ticker": "DCII", "Company Name": "DCI Indonesia Tbk.", "Sector": "TECH", "Currency": "IDR", "Revenue 6M26": "1,777,421", "Revenue 6M25": "1,334,118", "Net Profit 6M26": "732,533", "Net Profit 6M25": "616,946", "Last Prc": "191,375", "PER": "311.4", "PBV": "98.6", "ROA": "18.30%", "ROE": "31.60%"}, {"Ticker": "AKRA", "Company Name": "AKR Corporindo Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 6M26": "30,842,849", "Revenue 6M25": "21,417,874", "Net Profit 6M26": "1,430,800", "Net Profit 6M25": "1,180,078", "Last Prc": "1,465", "PER": "10.3", "PBV": "2.3", "ROA": "7.30%", "ROE": "22.10%"}, {"Ticker": "IPAC", "Company Name": "Era Graharealty Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "27,534", "Revenue 6M25": "25,821", "Net Profit 6M26": "-1,408", "Net Profit 6M25": "-1,224", "Last Prc": "166", "PER": "-56", "PBV": "4.5", "ROA": "-5.20%", "ROE": "-8.00%"}, {"Ticker": "BOLT", "Company Name": "Garuda Metalindo Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "879,064", "Revenue 6M25": "811,849", "Net Profit 6M26": "68,033", "Net Profit 6M25": "61,038", "Last Prc": "775", "PER": "13.4", "PBV": "2.2", "ROA": "8.40%", "ROE": "16.10%"}, {"Ticker": "ARTO", "Company Name": "Bank Jago Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "2,028,554", "Revenue 6M25": "1,593,135", "Net Profit 6M26": "189,070", "Net Profit 6M25": "127,069", "Last Prc": "1,150", "PER": "42.2", "PBV": "17.7", "ROA": "0.90%", "ROE": "41.90%"}, {"Ticker": "FORU", "Company Name": "Fortune Indonesia Tbk", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "10,356", "Revenue 6M25": "24,237", "Net Profit 6M26": "-7,384", "Net Profit 6M25": "-737", "Last Prc": "3,030", "PER": "-95.4", "PBV": "88.1", "ROA": "-55.30%", "ROE": "-92.30%"}, {"Ticker": "DIGI", "Company Name": "Arkadia Digital Media Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "16,759", "Revenue 6M25": "15,855", "Net Profit 6M26": "-2,080", "Net Profit 6M25": "-3,563", "Last Prc": "29", "PER": "-11.3", "PBV": "-7.8", "ROA": "-27.00%", "ROE": "68.90%"}, {"Ticker": "GUNA", "Company Name": "Gunanusa Eramandiri Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "915,644", "Revenue 6M25": "792,095", "Net Profit 6M26": "28,803", "Net Profit 6M25": "28,175", "Last Prc": "199", "PER": "8.6", "PBV": "0.8", "ROA": "4.50%", "ROE": "9.50%"}, {"Ticker": "OKAS", "Company Name": "Ancora Indonesia Resources Tbk.", "Sector": "BSIC", "Currency": "USD", "Revenue 6M26": "76,328", "Revenue 6M25": "76,084", "Net Profit 6M26": "-1,076", "Net Profit 6M25": "1,269", "Last Prc": "99", "PER": "-6.1", "PBV": "0.8", "ROA": "-1.40%", "ROE": "-12.90%"}, {"Ticker": "KARW", "Company Name": "Meratus Jasa Prima Tbk.", "Sector": "INFR", "Currency": "USD", "Revenue 6M26": "2,861", "Revenue 6M25": "2,808", "Net Profit 6M26": "150", "Net Profit 6M25": "34", "Last Prc": "212", "PER": "23.1", "PBV": "-0.2", "ROA": "2.40%", "ROE": "-0.90%"}, {"Ticker": "PGUN", "Company Name": "Pradiksi Gunatama Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "304,979", "Revenue 6M25": "385,174", "Net Profit 6M26": "44,510", "Net Profit 6M25": "83,534", "Last Prc": "7,275", "PER": "468.9", "PBV": "21.7", "ROA": "3.70%", "ROE": "4.60%"}, {"Ticker": "BCIC", "Company Name": "Bank JTrust Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "1,190,304", "Revenue 6M25": "1,489,861", "Net Profit 6M26": "80,236", "Net Profit 6M25": "112,859", "Last Prc": "125", "PER": "14.1", "PBV": "0.6", "ROA": "0.40%", "ROE": "4.10%"}, {"Ticker": "BMRI", "Company Name": "Bank Mandiri (Persero) Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "72,895,403", "Revenue 6M25": "81,576,343", "Net Profit 6M26": "30,412,319", "Net Profit 6M25": "24,455,082", "Last Prc": "4,090", "PER": "6.3", "PBV": "1.3", "ROA": "2.40%", "ROE": "21.40%"}, {"Ticker": "KICI", "Company Name": "Kedaung Indah Can Tbk", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "44,527", "Revenue 6M25": "37,698", "Net Profit 6M26": "-2,803", "Net Profit 6M25": "-5,707", "Last Prc": "195", "PER": "-9.6", "PBV": "0.5", "ROA": "-2.50%", "ROE": "-5.10%"}, {"Ticker": "BFIN", "Company Name": "BFI Finance  Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "3,424,600", "Revenue 6M25": "3,301,847", "Net Profit 6M26": "828,974", "Net Profit 6M25": "762,294", "Last Prc": "845", "PER": "7.5", "PBV": "1.1", "ROA": "6.60%", "ROE": "15.10%"}, {"Ticker": "PSKT", "Company Name": "Red Planet Indonesia Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "24,431", "Revenue 6M25": "25,021", "Net Profit 6M26": "-4,468", "Net Profit 6M25": "-5,768", "Last Prc": "214", "PER": "-247.9", "PBV": "7", "ROA": "-2.50%", "ROE": "-2.80%"}, {"Ticker": "BTPS", "Company Name": "Bank BTPN Syariah Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "2,541,534", "Revenue 6M25": "2,604,148", "Net Profit 6M26": "655,438", "Net Profit 6M25": "643,833", "Last Prc": "965", "PER": "5.7", "PBV": "0.7", "ROA": "5.60%", "ROE": "12.80%"}, {"Ticker": "CFIN", "Company Name": "Clipan Finance Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "774,092", "Revenue 6M25": "823,275", "Net Profit 6M26": "102,338", "Net Profit 6M25": "80,527", "Last Prc": "334", "PER": "6.5", "PBV": "0.2", "ROA": "2.20%", "ROE": "3.60%"}, {"Ticker": "GJTL", "Company Name": "Gajah Tunggal Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "8,999,302", "Revenue 6M25": "8,520,902", "Net Profit 6M26": "796,365", "Net Profit 6M25": "450,503", "Last Prc": "1,230", "PER": "2.7", "PBV": "0.4", "ROA": "6.80%", "ROE": "14.50%"}, {"Ticker": "HBAT", "Company Name": "Minahasa Membangun Hebat Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "10,787", "Revenue 6M25": "12,327", "Net Profit 6M26": "1,098", "Net Profit 6M25": "2,112", "Last Prc": "226", "PER": "107.1", "PBV": "2.9", "ROA": "2.60%", "ROE": "2.70%"}, {"Ticker": "IPCC", "Company Name": "Indonesia Kendaraan Terminal Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "413,500", "Revenue 6M25": "415,550", "Net Profit 6M26": "103,283", "Net Profit 6M25": "113,847", "Last Prc": "1,140", "PER": "10", "PBV": "1.6", "ROA": "10.10%", "ROE": "15.80%"}, {"Ticker": "NSSS", "Company Name": "Nusantara Sawit Sejahtera Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "1,050,394", "Revenue 6M25": "946,616", "Net Profit 6M26": "334,565", "Net Profit 6M25": "314,263", "Last Prc": "975", "PER": "34.7", "PBV": "10.2", "ROA": "15.60%", "ROE": "29.40%"}, {"Ticker": "LFLO", "Company Name": "Imago Mulia Persada Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "89,691", "Revenue 6M25": "73,066", "Net Profit 6M26": "12,218", "Net Profit 6M25": "10,964", "Last Prc": "480", "PER": "25.7", "PBV": "7", "ROA": "12.90%", "ROE": "27.10%"}, {"Ticker": "SCNP", "Company Name": "Selaras Citra Nusantara Perkasa Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "156,584", "Revenue 6M25": "110,464", "Net Profit 6M26": "12,558", "Net Profit 6M25": "9,781", "Last Prc": "162", "PER": "14.9", "PBV": "1.1", "ROA": "5.20%", "ROE": "7.20%"}, {"Ticker": "CEKA", "Company Name": "Wilmar Cahaya Indonesia Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "5,173,247", "Revenue 6M25": "4,530,241", "Net Profit 6M26": "147,220", "Net Profit 6M25": "123,137", "Last Prc": "2,210", "PER": "4.5", "PBV": "0.6", "ROA": "10.40%", "ROE": "14.20%"}, {"Ticker": "AUTO", "Company Name": "Astra Otoparts Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "10,852,703", "Revenue 6M25": "9,583,334", "Net Profit 6M26": "1,151,435", "Net Profit 6M25": "938,968", "Last Prc": "2,690", "PER": "5.6", "PBV": "0.8", "ROA": "9.60%", "ROE": "14.40%"}, {"Ticker": "ELIT", "Company Name": "Data Sinergitama Jaya Tbk.", "Sector": "TECH", "Currency": "IDR", "Revenue 6M26": "177,120", "Revenue 6M25": "249,233", "Net Profit 6M26": "17,684", "Net Profit 6M25": "17,665", "Last Prc": "172", "PER": "9.8", "PBV": "2", "ROA": "11.70%", "ROE": "20.00%"}, {"Ticker": "HALO", "Company Name": "Haloni Jane Tbk.", "Sector": "HLTH", "Currency": "IDR", "Revenue 6M26": "94,310", "Revenue 6M25": "100,459", "Net Profit 6M26": "9,360", "Net Profit 6M25": "3,653", "Last Prc": "68", "PER": "22.1", "PBV": "1.7", "ROA": "5.70%", "ROE": "7.60%"}, {"Ticker": "KKGI", "Company Name": "Resource Alam Indonesia Tbk.", "Sector": "ENRG", "Currency": "USD", "Revenue 6M26": "70,339", "Revenue 6M25": "71,218", "Net Profit 6M26": "2,158", "Net Profit 6M25": "1,030", "Last Prc": "272", "PER": "17.1", "PBV": "0.5", "ROA": "2.50%", "ROE": "3.00%"}, {"Ticker": "MIDI", "Company Name": "Midi Utama Indonesia Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "11,246,970", "Revenue 6M25": "10,370,452", "Net Profit 6M26": "485,970", "Net Profit 6M25": "390,519", "Last Prc": "282", "PER": "9.7", "PBV": "2", "ROA": "10.50%", "ROE": "21.00%"}, {"Ticker": "MLIA", "Company Name": "Mulia Industrindo Tbk", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "1,950,239", "Revenue 6M25": "2,001,552", "Net Profit 6M26": "-158,704", "Net Profit 6M25": "29,085", "Last Prc": "230", "PER": "-4.8", "PBV": "0.3", "ROA": "-4.30%", "ROE": "-6.10%"}, {"Ticker": "DFAM", "Company Name": "Dafam Property Indonesia Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "29,081", "Revenue 6M25": "28,798", "Net Profit 6M26": "-6,730", "Net Profit 6M25": "-1,808", "Last Prc": "77", "PER": "-10.9", "PBV": "23.5", "ROA": "-6.10%", "ROE": "-216.30%"}, {"Ticker": "AIMS", "Company Name": "Artha Mahiya Investama Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 6M26": "93", "Revenue 6M25": "79", "Net Profit 6M26": "-465", "Net Profit 6M25": "-856", "Last Prc": "384", "PER": "-90.8", "PBV": "296.4", "ROA": "-21.10%", "ROE": "-326.30%"}, {"Ticker": "MUTU", "Company Name": "Mutuagung Lestari Tbk.", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "148,979", "Revenue 6M25": "151,160", "Net Profit 6M26": "14,720", "Net Profit 6M25": "13,574", "Last Prc": "108", "PER": "12.7", "PBV": "1.4", "ROA": "8.10%", "ROE": "10.90%"}, {"Ticker": "TMAS", "Company Name": "Temas Tbk.", "Sector": "TLOG", "Currency": "IDR", "Revenue 6M26": "2,682,358", "Revenue 6M25": "2,074,201", "Net Profit 6M26": "441,572", "Net Profit 6M25": "286,219", "Last Prc": "122", "PER": "7.9", "PBV": "2.1", "ROA": "14.70%", "ROE": "27.30%"}, {"Ticker": "ASLC", "Company Name": "Autopedia Sukses Lestari Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "589,871", "Revenue 6M25": "447,096", "Net Profit 6M26": "8,487", "Net Profit 6M25": "18,568", "Last Prc": "67", "PER": "50.1", "PBV": "1.1", "ROA": "1.80%", "ROE": "2.30%"}, {"Ticker": "ITIC", "Company Name": "Indonesian Tobacco Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "162,617", "Revenue 6M25": "149,646", "Net Profit 6M26": "9,000", "Net Profit 6M25": "7,751", "Last Prc": "216", "PER": "11.3", "PBV": "0.4", "ROA": "2.80%", "ROE": "3.70%"}, {"Ticker": "INDO", "Company Name": "Royalindo Investa Wijaya Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "13,881", "Revenue 6M25": "12,792", "Net Profit 6M26": "33,697", "Net Profit 6M25": "16,393", "Last Prc": "167", "PER": "11.1", "PBV": "0.7", "ROA": "5.70%", "ROE": "6.00%"}, {"Ticker": "BUAH", "Company Name": "Segar Kumala Indonesia Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "1,822,043", "Revenue 6M25": "1,436,513", "Net Profit 6M26": "21,799", "Net Profit 6M25": "21,662", "Last Prc": "500", "PER": "22.9", "PBV": "5.1", "ROA": "7.90%", "ROE": "22.30%"}, {"Ticker": "CITY", "Company Name": "Natura City Developments Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "83,615", "Revenue 6M25": "71,643", "Net Profit 6M26": "13,243", "Net Profit 6M25": "7,817", "Last Prc": "167", "PER": "34.1", "PBV": "1", "ROA": "2.30%", "ROE": "2.90%"}, {"Ticker": "SUNI", "Company Name": "Sunindo Pratama Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 6M26": "324,286", "Revenue 6M25": "438,171", "Net Profit 6M26": "58,404", "Net Profit 6M25": "90,688", "Last Prc": "700", "PER": "14.4", "PBV": "1.9", "ROA": "9.80%", "ROE": "13.20%"}, {"Ticker": "HATM", "Company Name": "Habco Trans Maritima Tbk.", "Sector": "TLOG", "Currency": "IDR", "Revenue 6M26": "519,960", "Revenue 6M25": "520,112", "Net Profit 6M26": "51,600", "Net Profit 6M25": "109,881", "Last Prc": "515", "PER": "43.3", "PBV": "2.7", "ROA": "5.40%", "ROE": "6.30%"}, {"Ticker": "NICK", "Company Name": "Charnic Capital Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "-4,776", "Revenue 6M25": "67,618", "Net Profit 6M26": "-9,076", "Net Profit 6M25": "68,250", "Last Prc": "1,015", "PER": "-35.3", "PBV": "2.1", "ROA": "-5.50%", "ROE": "-6.00%"}, {"Ticker": "FUJI", "Company Name": "Fuji Finance Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "6,658", "Revenue 6M25": "8,332", "Net Profit 6M26": "3,328", "Net Profit 6M25": "4,279", "Last Prc": "204", "PER": "39.8", "PBV": "1.4", "ROA": "3.50%", "ROE": "3.60%"}, {"Ticker": "ERAL", "Company Name": "Sinar Eka Selaras Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "3,684,924", "Revenue 6M25": "2,614,126", "Net Profit 6M26": "108,454", "Net Profit 6M25": "80,188", "Last Prc": "300", "PER": "7.2", "PBV": "0.9", "ROA": "6.90%", "ROE": "12.00%"}, {"Ticker": "BPFI", "Company Name": "Woori Finance Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "303,053", "Revenue 6M25": "219,679", "Net Profit 6M26": "67,652", "Net Profit 6M25": "36,173", "Last Prc": "260", "PER": "5.1", "PBV": "0.6", "ROA": "4.20%", "ROE": "11.00%"}, {"Ticker": "SPMA", "Company Name": "Suparma Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "1,362,457", "Revenue 6M25": "1,288,366", "Net Profit 6M26": "36,897", "Net Profit 6M25": "53,061", "Last Prc": "166", "PER": "9.2", "PBV": "0.3", "ROA": "1.90%", "ROE": "2.90%"}, {"Ticker": "AGII", "Company Name": "Samator Indo Gas Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "1,543,583", "Revenue 6M25": "1,417,497", "Net Profit 6M26": "65,199", "Net Profit 6M25": "22,609", "Last Prc": "2,840", "PER": "66.8", "PBV": "2.3", "ROA": "1.50%", "ROE": "3.40%"}, {"Ticker": "BLES", "Company Name": "Superior Prima Sukses Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "847,989", "Revenue 6M25": "636,159", "Net Profit 6M26": "147,086", "Net Profit 6M25": "8,096", "Last Prc": "187", "PER": "5.7", "PBV": "1.3", "ROA": "13.80%", "ROE": "23.50%"}, {"Ticker": "BMBL", "Company Name": "Lavender Bina Cendikia Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "7,573", "Revenue 6M25": "8,032", "Net Profit 6M26": "-1,081", "Net Profit 6M25": "-79", "Last Prc": "32", "PER": "-15.2", "PBV": "0.5", "ROA": "-3.00%", "ROE": "-3.20%"}, {"Ticker": "BUKK", "Company Name": "Bukaka Teknik Utama Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "2,264,486", "Revenue 6M25": "115,821", "Net Profit 6M26": "221,247", "Net Profit 6M25": "359,888", "Last Prc": "1,005", "PER": "6", "PBV": "0.2", "ROA": "1.70%", "ROE": "2.60%"}, {"Ticker": "CRSN", "Company Name": "Carsurin Tbk.", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "237,417", "Revenue 6M25": "229,128", "Net Profit 6M26": "5,320", "Net Profit 6M25": "5,111", "Last Prc": "107", "PER": "29.1", "PBV": "1.3", "ROA": "2.80%", "ROE": "4.60%"}, {"Ticker": "ELSA", "Company Name": "Elnusa Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 6M26": "7,586,121", "Revenue 6M25": "6,965,188", "Net Profit 6M26": "434,706", "Net Profit 6M25": "336,482", "Last Prc": "670", "PER": "5.6", "PBV": "0.9", "ROA": "7.60%", "ROE": "16.00%"}, {"Ticker": "ERAA", "Company Name": "Erajaya Swasembada Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "42,895,365", "Revenue 6M25": "35,046,190", "Net Profit 6M26": "784,022", "Net Profit 6M25": "568,297", "Last Prc": "386", "PER": "3.8", "PBV": "0.6", "ROA": "5.30%", "ROE": "16.50%"}, {"Ticker": "MCOL", "Company Name": "Prima Andalan Mandiri Tbk.", "Sector": "ENRG", "Currency": "USD", "Revenue 6M26": "374,177", "Revenue 6M25": "304,003", "Net Profit 6M26": "36,740", "Net Profit 6M25": "23,100", "Last Prc": "3,590", "PER": "9.7", "PBV": "1.3", "ROA": "9.90%", "ROE": "13.30%"}, {"Ticker": "OCAP", "Company Name": "Onix Capital Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "-", "Revenue 6M25": "-", "Net Profit 6M26": "-19,112", "Net Profit 6M25": "-15,638", "Last Prc": "159", "PER": "-1.1", "PBV": "-0.1", "ROA": "-536.10%", "ROE": "12.90%"}, {"Ticker": "UNVR", "Company Name": "Unilever Indonesia Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "16,899,581", "Revenue 6M25": "15,786,456", "Net Profit 6M26": "2,969,724", "Net Profit 6M25": "2,155,575", "Last Prc": "1,695", "PER": "10.8", "PBV": "21.3", "ROA": "36.10%", "ROE": "196.50%"}, {"Ticker": "PBID", "Company Name": "Panca Budi Idaman Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "3,123,044", "Revenue 6M25": "2,552,200", "Net Profit 6M26": "410,455", "Net Profit 6M25": "193,501", "Last Prc": "530", "PER": "4.8", "PBV": "1.3", "ROA": "22.30%", "ROE": "27.80%"}, {"Ticker": "KUAS", "Company Name": "Ace Oldfields Tbk.", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "86,995", "Revenue 6M25": "88,567", "Net Profit 6M26": "2,017", "Net Profit 6M25": "3,460", "Last Prc": "89", "PER": "28.5", "PBV": "0.7", "ROA": "1.30%", "ROE": "2.40%"}, {"Ticker": "TIRA", "Company Name": "Tira Austenite Tbk", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "135,709", "Revenue 6M25": "134,709", "Net Profit 6M26": "1,537", "Net Profit 6M25": "-1,613", "Last Prc": "500", "PER": "95.6", "PBV": "1.6", "ROA": "0.70%", "ROE": "1.70%"}, {"Ticker": "KMTR", "Company Name": "Kirana Megatara Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "6,133,346", "Revenue 6M25": "7,012,276", "Net Profit 6M26": "-16,613", "Net Profit 6M25": "200,460", "Last Prc": "230", "PER": "-56.9", "PBV": "0.9", "ROA": "-0.60%", "ROE": "-1.60%"}, {"Ticker": "IATA", "Company Name": "Karya Pacific Energy Tbk.", "Sector": "ENRG", "Currency": "USD", "Revenue 6M26": "33,382", "Revenue 6M25": "39,966", "Net Profit 6M26": "961", "Net Profit 6M25": "5,469", "Last Prc": "58", "PER": "52.4", "PBV": "0.8", "ROA": "0.80%", "ROE": "1.50%"}, {"Ticker": "ISSP", "Company Name": "Steel Pipe Industry of Indonesia Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "2,836,582", "Revenue 6M25": "2,614,347", "Net Profit 6M26": "240,540", "Net Profit 6M25": "213,360", "Last Prc": "420", "PER": "6.1", "PBV": "0.5", "ROA": "4.60%", "ROE": "8.30%"}, {"Ticker": "ESIP", "Company Name": "Sinergi Inti Plastindo Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "31,571", "Revenue 6M25": "29,711", "Net Profit 6M26": "1,822", "Net Profit 6M25": "907", "Last Prc": "123", "PER": "37.5", "PBV": "1.4", "ROA": "3.50%", "ROE": "3.60%"}, {"Ticker": "PSGO", "Company Name": "Palma Serasih Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "1,202,196", "Revenue 6M25": "1,282,910", "Net Profit 6M26": "170,708", "Net Profit 6M25": "213,557", "Last Prc": "198", "PER": "10.9", "PBV": "1.3", "ROA": "10.70%", "ROE": "12.30%"}, {"Ticker": "LPCK", "Company Name": "Lippo Cikarang Tbk", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "1,624,942", "Revenue 6M25": "2,238,092", "Net Profit 6M26": "228,351", "Net Profit 6M25": "208,209", "Last Prc": "510", "PER": "5.7", "PBV": "0.4", "ROA": "4.20%", "ROE": "6.60%"}, {"Ticker": "BSWD", "Company Name": "Bank Of India Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "211,801", "Revenue 6M25": "219,227", "Net Profit 6M26": "54,603", "Net Profit 6M25": "33,193", "Last Prc": "1,125", "PER": "38", "PBV": "1.2", "ROA": "1.50%", "ROE": "3.10%"}, {"Ticker": "WINE", "Company Name": "Hatten Bali Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "133,585", "Revenue 6M25": "130,705", "Net Profit 6M26": "14,059", "Net Profit 6M25": "17,920", "Last Prc": "150", "PER": "14.5", "PBV": "1.2", "ROA": "6.20%", "ROE": "8.20%"}, {"Ticker": "TRJA", "Company Name": "Transkon Jaya Tbk.", "Sector": "TLOG", "Currency": "IDR", "Revenue 6M26": "222,292", "Revenue 6M25": "270,854", "Net Profit 6M26": "5,009", "Net Profit 6M25": "7,954", "Last Prc": "113", "PER": "17", "PBV": "0.4", "ROA": "1.40%", "ROE": "2.50%"}, {"Ticker": "DATA", "Company Name": "Remala Abadi Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "248,247", "Revenue 6M25": "203,905", "Net Profit 6M26": "58,782", "Net Profit 6M25": "34,312", "Last Prc": "1,950", "PER": "22.8", "PBV": "6.5", "ROA": "10.60%", "ROE": "28.40%"}, {"Ticker": "PURI", "Company Name": "Puri Global Sukses Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "29,435", "Revenue 6M25": "17,976", "Net Profit 6M26": "2,954", "Net Profit 6M25": "-2,975", "Last Prc": "133", "PER": "22.5", "PBV": "1.5", "ROA": "0.80%", "ROE": "6.60%"}, {"Ticker": "DADA", "Company Name": "Diamond Citra Propertindo Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "20,551", "Revenue 6M25": "5,395", "Net Profit 6M26": "6,042", "Net Profit 6M25": "212", "Last Prc": "50", "PER": "30.7", "PBV": "1", "ROA": "1.90%", "ROE": "3.30%"}, {"Ticker": "MPOW", "Company Name": "Megapower Makmur Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "8,359", "Revenue 6M25": "16,199", "Net Profit 6M26": "-7,885", "Net Profit 6M25": "-1,596", "Last Prc": "102", "PER": "-5.3", "PBV": "0.9", "ROA": "-12.10%", "ROE": "-16.40%"}, {"Ticker": "DRMA", "Company Name": "Dharma Polimetal Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "3,157,083", "Revenue 6M25": "2,773,670", "Net Profit 6M26": "282,990", "Net Profit 6M25": "240,174", "Last Prc": "935", "PER": "7.8", "PBV": "1.6", "ROA": "12.80%", "ROE": "20.70%"}, {"Ticker": "GRPM", "Company Name": "Graha Prima Mentari Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "491,809", "Revenue 6M25": "341,871", "Net Profit 6M26": "3,746", "Net Profit 6M25": "1,921", "Last Prc": "220", "PER": "45.5", "PBV": "4.4", "ROA": "3.90%", "ROE": "9.70%"}, {"Ticker": "KEJU", "Company Name": "Mulia Boga Raya Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "960,097", "Revenue 6M25": "681,362", "Net Profit 6M26": "105,502", "Net Profit 6M25": "91,471", "Last Prc": "540", "PER": "14.4", "PBV": "3.6", "ROA": "15.80%", "ROE": "24.70%"}, {"Ticker": "JGLE", "Company Name": "Graha Andrasentra Propertindo Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "66,547", "Revenue 6M25": "66,104", "Net Profit 6M26": "-17,511", "Net Profit 6M25": "-20,920", "Last Prc": "60", "PER": "-38.7", "PBV": "1.3", "ROA": "-2.30%", "ROE": "-3.30%"}, {"Ticker": "INAF", "Company Name": "Indofarma Tbk.", "Sector": "HLTH", "Currency": "IDR", "Revenue 6M26": "79,044", "Revenue 6M25": "67,029", "Net Profit 6M26": "-33,130", "Net Profit 6M25": "-43,552", "Last Prc": "126", "PER": "-5.9", "PBV": "-0.5", "ROA": "-13.00%", "ROE": "9.00%"}, {"Ticker": "PTMR", "Company Name": "Master Print Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "58,191", "Revenue 6M25": "63,320", "Net Profit 6M26": "6,220", "Net Profit 6M25": "1,453", "Last Prc": "374", "PER": "57.3", "PBV": "9.1", "ROA": "9.60%", "ROE": "15.80%"}, {"Ticker": "IKPM", "Company Name": "Ikapharmindo Putramas Tbk.", "Sector": "HLTH", "Currency": "IDR", "Revenue 6M26": "212,131", "Revenue 6M25": "175,447", "Net Profit 6M26": "2,890", "Net Profit 6M25": "-9,140", "Last Prc": "188", "PER": "54.8", "PBV": "1.4", "ROA": "1.20%", "ROE": "2.60%"}, {"Ticker": "ESSA", "Company Name": "ESSA Industries Indonesia Tbk.", "Sector": "BSIC", "Currency": "USD", "Revenue 6M26": "186,476", "Revenue 6M25": "137,588", "Net Profit 6M26": "30,174", "Net Profit 6M25": "14,844", "Last Prc": "615", "PER": "9.8", "PBV": "1.4", "ROA": "8.70%", "ROE": "14.20%"}, {"Ticker": "LOPI", "Company Name": "Logisticsplus International Tbk.", "Sector": "TLOG", "Currency": "IDR", "Revenue 6M26": "57,661", "Revenue 6M25": "53,305", "Net Profit 6M26": "567", "Net Profit 6M25": "-", "Last Prc": "64", "PER": "62", "PBV": "1.2", "ROA": "1.00%", "ROE": "1.90%"}, {"Ticker": "PGEO", "Company Name": "Pertamina Geothermal Energy Tbk.", "Sector": "INFR", "Currency": "USD", "Revenue 6M26": "235,027", "Revenue 6M25": "204,850", "Net Profit 6M26": "79,621", "Net Profit 6M25": "68,956", "Last Prc": "1,010", "PER": "14.8", "PBV": "1.2", "ROA": "5.40%", "ROE": "7.90%"}, {"Ticker": "ADCP", "Company Name": "Adhi Commuter Properti Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "81,438", "Revenue 6M25": "120,519", "Net Profit 6M26": "-52,280", "Net Profit 6M25": "33", "Last Prc": "50", "PER": "-10.6", "PBV": "3", "ROA": "-2.10%", "ROE": "-28.60%"}, {"Ticker": "WIFI", "Company Name": "Solusi Sinergi Digital Tbk.", "Sector": "TECH", "Currency": "IDR", "Revenue 6M26": "1,570,897", "Revenue 6M25": "513,464", "Net Profit 6M26": "331,163", "Net Profit 6M25": "227,913", "Last Prc": "1,960", "PER": "15.7", "PBV": "1.4", "ROA": "3.20%", "ROE": "8.70%"}, {"Ticker": "TRON", "Company Name": "Teknologi Karya Digital Nusa Tbk.", "Sector": "TECH", "Currency": "IDR", "Revenue 6M26": "28,239", "Revenue 6M25": "56,715", "Net Profit 6M26": "277", "Net Profit 6M25": "-6,503", "Last Prc": "108", "PER": "576.3", "PBV": "1.8", "ROA": "0.20%", "ROE": "0.30%"}, {"Ticker": "SUPA", "Company Name": "Super Bank Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "1,499,672", "Revenue 6M25": "904,492", "Net Profit 6M26": "182,608", "Net Profit 6M25": "20,508", "Last Prc": "590", "PER": "54.8", "PBV": "2.4", "ROA": "1.40%", "ROE": "4.40%"}, {"Ticker": "GTSI", "Company Name": "GTS Internasional Tbk.", "Sector": "ENRG", "Currency": "USD", "Revenue 6M26": "17,693", "Revenue 6M25": "17,007", "Net Profit 6M26": "-1,902", "Net Profit 6M25": "3,754", "Last Prc": "137", "PER": "-31.6", "PBV": "2.4", "ROA": "-2.70%", "ROE": "-7.60%"}, {"Ticker": "TGKA", "Company Name": "Tigaraksa Satria Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "7,104,527", "Revenue 6M25": "6,204,453", "Net Profit 6M26": "200,589", "Net Profit 6M25": "185,101", "Last Prc": "4,800", "PER": "11", "PBV": "1.9", "ROA": "8.00%", "ROE": "17.70%"}, {"Ticker": "HOKI", "Company Name": "Buyung Poetra Sembada Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "762,035", "Revenue 6M25": "575,333", "Net Profit 6M26": "-57,210", "Net Profit 6M25": "-10,252", "Last Prc": "54", "PER": "-4.6", "PBV": "1", "ROA": "-13.00%", "ROE": "-21.50%"}, {"Ticker": "CMPP", "Company Name": "AirAsia Indonesia Tbk.", "Sector": "TLOG", "Currency": "IDR", "Revenue 6M26": "3,905,468", "Revenue 6M25": "3,976,750", "Net Profit 6M26": "-1,448,457", "Net Profit 6M25": "-787,717", "Last Prc": "69", "PER": "-0.3", "PBV": "-0.1", "ROA": "-61.20%", "ROE": "23.80%"}, {"Ticker": "BANK", "Company Name": "Bank Aladin Syariah Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "439,623", "Revenue 6M25": "380,577", "Net Profit 6M26": "38,384", "Net Profit 6M25": "80,036", "Last Prc": "280", "PER": "51.4", "PBV": "1.2", "ROA": "0.50%", "ROE": "2.30%"}, {"Ticker": "WICO", "Company Name": "Wicaksana Overseas International Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "101,087", "Revenue 6M25": "407,464", "Net Profit 6M26": "-9,368", "Net Profit 6M25": "-69,560", "Last Prc": "123", "PER": "-15.7", "PBV": "-1.3", "ROA": "-10.40%", "ROE": "8.20%"}, {"Ticker": "BUKA", "Company Name": "Bukalapak.com Tbk.", "Sector": "TECH", "Currency": "IDR", "Revenue 6M26": "3,991,761", "Revenue 6M25": "3,087,126", "Net Profit 6M26": "-817,815", "Net Profit 6M25": "467,120", "Last Prc": "115", "PER": "-6.5", "PBV": "0.4", "ROA": "-6.60%", "ROE": "-6.70%"}, {"Ticker": "BKSW", "Company Name": "Bank QNB Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "327,354", "Revenue 6M25": "350,908", "Net Profit 6M26": "29,569", "Net Profit 6M25": "10,627", "Last Prc": "53", "PER": "31.5", "PBV": "0.4", "ROA": "0.40%", "ROE": "1.30%"}, {"Ticker": "BRAM", "Company Name": "Indo Kordsa Tbk.", "Sector": "CCYL", "Currency": "USD", "Revenue 6M26": "83,045", "Revenue 6M25": "61,779", "Net Profit 6M26": "7,993", "Net Profit 6M25": "-276", "Last Prc": "4,480", "PER": "7", "PBV": "0.5", "ROA": "5.70%", "ROE": "7.50%"}, {"Ticker": "HRME", "Company Name": "Menteng Heritage Realty Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "43,893", "Revenue 6M25": "50,322", "Net Profit 6M26": "-13,021", "Net Profit 6M25": "-2,549", "Last Prc": "40", "PER": "-9.2", "PBV": "0.5", "ROA": "-3.20%", "ROE": "-4.90%"}, {"Ticker": "HYGN", "Company Name": "Ecocare Indo Pasifik Tbk.", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "208,547", "Revenue 6M25": "172,405", "Net Profit 6M26": "7,958", "Net Profit 6M25": "6,003", "Last Prc": "169", "PER": "26.5", "PBV": "2.5", "ROA": "6.40%", "ROE": "9.50%"}, {"Ticker": "MAHA", "Company Name": "Mandiri Herindo Adiperkasa Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 6M26": "1,651,663", "Revenue 6M25": "1,231,371", "Net Profit 6M26": "142,130", "Net Profit 6M25": "12,898", "Last Prc": "140", "PER": "8.1", "PBV": "1.3", "ROA": "10.00%", "ROE": "15.50%"}, {"Ticker": "BBCA", "Company Name": "Bank Central Asia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "49,765,390", "Revenue 6M25": "49,313,964", "Net Profit 6M26": "29,534,446", "Net Profit 6M25": "29,016,414", "Last Prc": "6,275", "PER": "13", "PBV": "2.9", "ROA": "3.60%", "ROE": "21.80%"}, {"Ticker": "TBMS", "Company Name": "Tembaga Mulia Semanan Tbk.", "Sector": "BSIC", "Currency": "USD", "Revenue 6M26": "524,868", "Revenue 6M25": "430,751", "Net Profit 6M26": "3,343", "Net Profit 6M25": "3,137", "Last Prc": "1,135", "PER": "6.9", "PBV": "0.6", "ROA": "3.30%", "ROE": "8.70%"}, {"Ticker": "MIKA", "Company Name": "Mitra Keluarga Karyasehat Tbk.", "Sector": "HLTH", "Currency": "IDR", "Revenue 6M26": "2,768,964", "Revenue 6M25": "2,563,460", "Net Profit 6M26": "684,052", "Net Profit 6M25": "639,725", "Last Prc": "1,700", "PER": "17.3", "PBV": "3.2", "ROA": "13.70%", "ROE": "18.70%"}, {"Ticker": "HADE", "Company Name": "Himalaya Energi Perkasa Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "2,198", "Revenue 6M25": "2,022", "Net Profit 6M26": "-336", "Net Profit 6M25": "-2,902", "Last Prc": "19", "PER": "-60", "PBV": "9.6", "ROA": "-6.90%", "ROE": "-16.00%"}, {"Ticker": "KOCI", "Company Name": "Kokoh Exa Nusantara Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "17,038", "Revenue 6M25": "35,944", "Net Profit 6M26": "2,407", "Net Profit 6M25": "10,915", "Last Prc": "96", "PER": "89.1", "PBV": "3.2", "ROA": "3.30%", "ROE": "3.50%"}, {"Ticker": "NAIK", "Company Name": "Adiwarna Anugerah Abadi Tbk.", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "102,111", "Revenue 6M25": "102,913", "Net Profit 6M26": "12,053", "Net Profit 6M25": "14,248", "Last Prc": "86", "PER": "11.9", "PBV": "1.3", "ROA": "9.00%", "ROE": "11.30%"}, {"Ticker": "LTLS", "Company Name": "Lautan Luas Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "5,110,194", "Revenue 6M25": "4,215,972", "Net Profit 6M26": "124,487", "Net Profit 6M25": "79,603", "Last Prc": "785", "PER": "4.6", "PBV": "0.3", "ROA": "3.30%", "ROE": "7.50%"}, {"Ticker": "ROCK", "Company Name": "Rockfields Properti Indonesia Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "69,184", "Revenue 6M25": "67,074", "Net Profit 6M26": "15,649", "Net Profit 6M25": "11,544", "Last Prc": "1,750", "PER": "80.2", "PBV": "3", "ROA": "3.30%", "ROE": "3.70%"}, {"Ticker": "IBFN", "Company Name": "Intan Baru Prana Tbk.", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "110,230", "Revenue 6M25": "74,989", "Net Profit 6M26": "6,087", "Net Profit 6M25": "-33,473", "Last Prc": "63", "PER": "7.9", "PBV": "-0.1", "ROA": "2.50%", "ROE": "-1.60%"}, {"Ticker": "PJAA", "Company Name": "Pembangunan Jaya Ancol Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "498,667", "Revenue 6M25": "495,464", "Net Profit 6M26": "1,033", "Net Profit 6M25": "21,696", "Last Prc": "448", "PER": "347", "PBV": "0.4", "ROA": "0.10%", "ROE": "0.10%"}, {"Ticker": "DKFT", "Company Name": "Central Omega Resources Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "1,006,804", "Revenue 6M25": "950,650", "Net Profit 6M26": "406,244", "Net Profit 6M25": "310,127", "Last Prc": "655", "PER": "4.5", "PBV": "2.4", "ROA": "25.20%", "ROE": "52.80%"}, {"Ticker": "SPRE", "Company Name": "Soraya Berjaya Indonesia Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "20,844", "Revenue 6M25": "23,751", "Net Profit 6M26": "367", "Net Profit 6M25": "1,154", "Last Prc": "89", "PER": "97", "PBV": "1.4", "ROA": "1.30%", "ROE": "1.50%"}, {"Ticker": "TINS", "Company Name": "TIMAH (Persero) Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "10,419,726", "Revenue 6M25": "4,219,871", "Net Profit 6M26": "2,714,678", "Net Profit 6M25": "300,067", "Last Prc": "3,420", "PER": "4.7", "PBV": "2.4", "ROA": "33.00%", "ROE": "51.50%"}, {"Ticker": "ASBI", "Company Name": "Asuransi Bintang Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "143,463", "Revenue 6M25": "162,725", "Net Profit 6M26": "9,053", "Net Profit 6M25": "5,531", "Last Prc": "426", "PER": "8.2", "PBV": "0.3", "ROA": "2.10%", "ROE": "3.90%"}, {"Ticker": "BOAT", "Company Name": "Newport Marine Services Tbk.", "Sector": "ENRG", "Currency": "USD", "Revenue 6M26": "7,274", "Revenue 6M25": "7,569", "Net Profit 6M26": "359", "Net Profit 6M25": "319", "Last Prc": "129", "PER": "35", "PBV": "1.1", "ROA": "2.00%", "ROE": "3.00%"}, {"Ticker": "MTMH", "Company Name": "Murni Sadar Tbk.", "Sector": "HLTH", "Currency": "IDR", "Revenue 6M26": "788,156", "Revenue 6M25": "639,942", "Net Profit 6M26": "39,383", "Net Profit 6M25": "34,858", "Last Prc": "930", "PER": "24.4", "PBV": "1.3", "ROA": "2.80%", "ROE": "5.10%"}, {"Ticker": "HOMI", "Company Name": "Grand House Mulia Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "10,816", "Revenue 6M25": "17,064", "Net Profit 6M26": "181", "Net Profit 6M25": "901", "Last Prc": "177", "PER": "769.7", "PBV": "2.1", "ROA": "0.20%", "ROE": "0.30%"}, {"Ticker": "RGAS", "Company Name": "Kian Santang Muliatama Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 6M26": "51,659", "Revenue 6M25": "147,262", "Net Profit 6M26": "3,735", "Net Profit 6M25": "3,127", "Last Prc": "242", "PER": "47.3", "PBV": "3.3", "ROA": "6.20%", "ROE": "7.10%"}, {"Ticker": "ZATA", "Company Name": "Bersama Zatta Jaya Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "125,798", "Revenue 6M25": "125,351", "Net Profit 6M26": "-88,087", "Net Profit 6M25": "4,103", "Last Prc": "63", "PER": "-3", "PBV": "2", "ROA": "-41.50%", "ROE": "-64.90%"}, {"Ticker": "MPRO", "Company Name": "Maha Properti Indonesia Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "3,154", "Revenue 6M25": "2,060", "Net Profit 6M26": "-16,210", "Net Profit 6M25": "-20,589", "Last Prc": "10,450.00", "PER": "-3,204.70", "PBV": "131.7", "ROA": "-1.90%", "ROE": "-4.10%"}, {"Ticker": "TRUS", "Company Name": "Trust Finance Indonesia Tbk", "Sector": "FINC", "Currency": "IDR", "Revenue 6M26": "16,924", "Revenue 6M25": "21,573", "Net Profit 6M26": "4,500", "Net Profit 6M25": "7,743", "Last Prc": "426", "PER": "37.9", "PBV": "0.8", "ROA": "2.10%", "ROE": "2.20%"}, {"Ticker": "CGAS", "Company Name": "Citra Nusantara Gemilang Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 6M26": "374,224", "Revenue 6M25": "265,475", "Net Profit 6M26": "10,834", "Net Profit 6M25": "1,860", "Last Prc": "151", "PER": "12.3", "PBV": "1", "ROA": "4.70%", "ROE": "8.10%"}, {"Ticker": "KONI", "Company Name": "Perdana Bangun Pusaka Tbk", "Sector": "INDU", "Currency": "IDR", "Revenue 6M26": "156,420", "Revenue 6M25": "125,607", "Net Profit 6M26": "6,437", "Net Profit 6M25": "3,653", "Last Prc": "2,400", "PER": "58.2", "PBV": "4.1", "ROA": "6.50%", "ROE": "7.10%"}, {"Ticker": "CDIA", "Company Name": "Chandra Daya Investasi Tbk.", "Sector": "INFR", "Currency": "USD", "Revenue 6M26": "82,146", "Revenue 6M25": "66,870", "Net Profit 6M26": "17,287", "Net Profit 6M25": "67,843", "Last Prc": "650", "PER": "130.3", "PBV": "4.3", "ROA": "1.80%", "ROE": "3.30%"}, {"Ticker": "MGLV", "Company Name": "NexAI Digital Infrastruktur Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "26,141", "Revenue 6M25": "102,746", "Net Profit 6M26": "-14,106", "Net Profit 6M25": "9,526", "Last Prc": "8,275", "PER": "-558.7", "PBV": "139.2", "ROA": "-15.30%", "ROE": "-24.90%"}, {"Ticker": "PNGO", "Company Name": "AEP Pinago Plantations Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "1,116,558", "Revenue 6M25": "1,211,431", "Net Profit 6M26": "159,304", "Net Profit 6M25": "151,038", "Last Prc": "3,550", "PER": "8.7", "PBV": "2.2", "ROA": "18.60%", "ROE": "25.20%"}, {"Ticker": "RDTX", "Company Name": "Roda Vivatex Tbk", "Sector": "PPTY", "Currency": "IDR", "Revenue 6M26": "313,212", "Revenue 6M25": "283,037", "Net Profit 6M26": "232,802", "Net Profit 6M25": "166,620", "Last Prc": "13,600", "PER": "7.9", "PBV": "1.1", "ROA": "12.10%", "ROE": "13.50%"}, {"Ticker": "ENZO", "Company Name": "Morenzo Abadi Perkasa Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "261,037", "Revenue 6M25": "169,594", "Net Profit 6M26": "8,249", "Net Profit 6M25": "-7,525", "Last Prc": "65", "PER": "8.5", "PBV": "0.8", "ROA": "3.80%", "ROE": "9.40%"}, {"Ticker": "TALF", "Company Name": "Tunas Alfin Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "704,981", "Revenue 6M25": "700,972", "Net Profit 6M26": "28,410", "Net Profit 6M25": "17,474", "Last Prc": "600", "PER": "14.3", "PBV": "0.6", "ROA": "2.90%", "ROE": "4.30%"}, {"Ticker": "KKES", "Company Name": "Kusuma Kemindo Sentosa Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 6M26": "114,419", "Revenue 6M25": "92,068", "Net Profit 6M26": "1,579", "Net Profit 6M25": "-2,589", "Last Prc": "68", "PER": "32.3", "PBV": "1.6", "ROA": "2.20%", "ROE": "5.00%"}, {"Ticker": "STTP", "Company Name": "Siantar Top Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "2,734,751", "Revenue 6M25": "2,506,504", "Net Profit 6M26": "596,368", "Net Profit 6M25": "539,294", "Last Prc": "9,975", "PER": "11", "PBV": "1.7", "ROA": "13.60%", "ROE": "15.10%"}, {"Ticker": "KOPI", "Company Name": "Mitra Energi Persada Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 6M26": "137,198", "Revenue 6M25": "125,438", "Net Profit 6M26": "4,761", "Net Profit 6M25": "-1,329", "Last Prc": "220", "PER": "15.4", "PBV": "2", "ROA": "3.50%", "ROE": "12.90%"}, {"Ticker": "MPXL", "Company Name": "MPX Logistics International Tbk.", "Sector": "TLOG", "Currency": "IDR", "Revenue 6M26": "73,121", "Revenue 6M25": "56,769", "Net Profit 6M26": "4,115", "Net Profit 6M25": "-3,509", "Last Prc": "156", "PER": "37.9", "PBV": "3.4", "ROA": "4.00%", "ROE": "8.90%"}, {"Ticker": "SSTM", "Company Name": "Sunson Textile Manufacture Tbk", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "138,823", "Revenue 6M25": "124,234", "Net Profit 6M26": "10,284", "Net Profit 6M25": "1,325", "Last Prc": "394", "PER": "22.4", "PBV": "2.2", "ROA": "6.00%", "ROE": "9.70%"}, {"Ticker": "ISAT", "Company Name": "Indosat Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 6M26": "30,653,145", "Revenue 6M25": "27,109,586", "Net Profit 6M26": "4,308,943", "Net Profit 6M25": "2,335,293", "Last Prc": "1,900", "PER": "7.1", "PBV": "1.7", "ROA": "6.20%", "ROE": "23.30%"}, {"Ticker": "UNIQ", "Company Name": "Ulima Nitra Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 6M26": "212,485", "Revenue 6M25": "288,170", "Net Profit 6M26": "7,018", "Net Profit 6M25": "17,734", "Last Prc": "108", "PER": "24.2", "PBV": "0.7", "ROA": "2.00%", "ROE": "2.90%"}, {"Ticker": "GWSA", "Company Name": "Greenwood Sejahtera Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "33,413", "Revenue 6M25": "31,771", "Net Profit 6M26": "72,587", "Net Profit 6M25": "59,936", "Last Prc": "126", "PER": "6.8", "PBV": "0.1", "ROA": "1.90%", "ROE": "2.00%"}, {"Ticker": "BEER", "Company Name": "Jobubu Jarum Minahasa Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 6M26": "26,015", "Revenue 6M25": "21,762", "Net Profit 6M26": "673", "Net Profit 6M25": "619,761", "Last Prc": "75", "PER": "223", "PBV": "1.3", "ROA": "0.50%", "ROE": "0.60%"}, {"Ticker": "AEGS", "Company Name": "Anugerah Spareparts Sejahtera Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 6M26": "15,645", "Revenue 6M25": "13,343", "Net Profit 6M26": "123", "Net Profit 6M25": "-158", "Last Prc": "41", "PER": "168.1", "PBV": "0.6", "ROA": "0.30%", "ROE": "0.40%"}];
+
+    let currentData = [...rawData];
+    let sortCol = null;
+    let sortAsc = true;
+
+    const tbody = document.getElementById('tableBody');
+    const searchInput = document.getElementById('search');
+    const sectorFilter = document.getElementById('sectorFilter');
+    const statsEl = document.getElementById('stats');
+
+    // Populate sector filter
+    const sectors = [...new Set(rawData.map(r => r.Sector))].sort();
+    sectors.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      sectorFilter.appendChild(opt);
+    });
+
+    function formatNumber(val) {
+      if (!val || val === '-' || val === '') return '—';
+      return val;
+    }
+
+    function isNegative(val) {
+      if (!val) return false;
+      const cleaned = String(val).replace(/[",%]/g, '');
+      return cleaned.startsWith('-');
+    }
+
+    function renderTable(data) {
+      tbody.innerHTML = '';
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="ticker">${row.Ticker || ''}</td>
+          <td class="company" title="${row['Company Name'] || ''}">${row['Company Name'] || ''}</td>
+          <td>${row.Sector || ''}</td>
+          <td>${row.Currency || ''}</td>
+          <td>${formatNumber(row['Revenue 6M26'])}</td>
+          <td>${formatNumber(row['Revenue 6M25'])}</td>
+          <td class="${isNegative(row['Net Profit 6M26']) ? 'negative' : 'positive'}">${formatNumber(row['Net Profit 6M26'])}</td>
+          <td class="${isNegative(row['Net Profit 6M25']) ? 'negative' : 'positive'}">${formatNumber(row['Net Profit 6M25'])}</td>
+          <td>${formatNumber(row['Last Prc'])}</td>
+          <td>${formatNumber(row.PER)}</td>
+          <td>${formatNumber(row.PBV)}</td>
+          <td class="${isNegative(row.ROA) ? 'negative' : ''}">${formatNumber(row.ROA)}</td>
+          <td class="${isNegative(row.ROE) ? 'negative' : ''}">${formatNumber(row.ROE)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Update stats
+      const profitable = data.filter(r => !isNegative(r['Net Profit 6M26']) && r['Net Profit 6M26'] && r['Net Profit 6M26'] !== '-').length;
+      statsEl.innerHTML = `
+        <div class="stat">Showing <strong>${data.length}</strong> of ${rawData.length} stocks</div>
+        <div class="stat">Profitable (6M26): <strong style="color:var(--green)">${profitable}</strong></div>
+        <div class="stat">Loss-making: <strong style="color:var(--red)">${data.length - profitable}</strong></div>
+      `;
+    }
+
+    function applyFilters() {
+      const q = searchInput.value.toLowerCase().trim();
+      const sector = sectorFilter.value;
+
+      currentData = rawData.filter(row => {
+        const matchSearch = !q || 
+          (row.Ticker || '').toLowerCase().includes(q) ||
+          (row['Company Name'] || '').toLowerCase().includes(q);
+        const matchSector = !sector || row.Sector === sector;
+        return matchSearch && matchSector;
+      });
+
+      if (sortCol) {
+        sortData(sortCol, false);
+      } else {
+        renderTable(currentData);
+      }
+    }
+
+    function sortData(col, toggle = true) {
+      if (toggle) {
+        if (sortCol === col) sortAsc = !sortAsc;
+        else { sortCol = col; sortAsc = true; }
+      }
+
+      // Update header classes
+      document.querySelectorAll('th').forEach(th => {
+        th.classList.remove('sorted-asc', 'sorted-desc');
+        if (th.dataset.col === col) {
+          th.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+        }
+      });
+
+      currentData.sort((a, b) => {
+        let va = a[col] || '';
+        let vb = b[col] || '';
+
+        // Try numeric sort
+        const na = parseFloat(String(va).replace(/[",%]/g, ''));
+        const nb = parseFloat(String(vb).replace(/[",%]/g, ''));
+
+        if (!isNaN(na) && !isNaN(nb)) {
+          return sortAsc ? na - nb : nb - na;
+        }
+        // String sort
+        va = String(va).toLowerCase();
+        vb = String(vb).toLowerCase();
+        if (va < vb) return sortAsc ? -1 : 1;
+        if (va > vb) return sortAsc ? 1 : -1;
+        return 0;
+      });
+
+      renderTable(currentData);
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', applyFilters);
+    sectorFilter.addEventListener('change', applyFilters);
+
+    document.querySelectorAll('th').forEach(th => {
+      th.addEventListener('click', () => sortData(th.dataset.col));
+    });
+
+    // Initial render
+    renderTable(rawData);
+  </script>
+</body>
+</html>
