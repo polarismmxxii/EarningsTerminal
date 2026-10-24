@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indonesian Stocks - 9M 2026 vs 2025 Financial Data</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #4ade80;
+      --red: #f87171;
+      --blue: #60a5fa;
+      --gray: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+      padding: 1rem;
+      min-height: 100vh;
+    }
+    .container { max-width: 100%; margin: 0 auto; }
+    header {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .subtitle { color: var(--muted); font-size: 0.8rem; margin-top: 0.15rem; }
+    .note {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .note span strong { color: var(--accent); }
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input[type="search"] {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      width: 220px;
+      outline: none;
+    }
+    input[type="search"]:focus { border-color: var(--accent); }
+    select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+    .stats {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .stat {
+      background: var(--card);
+      padding: 0.3rem 0.65rem;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+    }
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+    th {
+      background: #0f172a;
+      color: var(--muted);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.5rem 0.5rem;
+      position: sticky;
+      top: 0;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.72rem;
+    }
+    th:hover { color: var(--accent); }
+    th.sorted-asc::after { content: " ▲"; font-size: 0.65em; }
+    th.sorted-desc::after { content: " ▼"; font-size: 0.65em; }
+    th.center, td.center { text-align: center; }
+    th.right, td.right { text-align: right; }
+    td {
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tr:hover td { background: rgba(56, 189, 248, 0.08); }
+    .ticker { font-weight: 700; color: var(--accent); }
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+    .company { max-width: 150px; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+    .arrow-up { color: var(--blue); font-weight: 700; font-size: 0.9rem; }
+    .arrow-down { color: var(--red); font-weight: 700; font-size: 0.9rem; }
+    .arrow-flat { color: var(--gray); font-size: 0.7rem; }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .pagination button {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.35rem 0.7rem;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      min-width: 32px;
+    }
+    .pagination button:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .pagination button.active {
+      background: #0ea5e9;
+      border-color: #0ea5e9;
+      color: white;
+      font-weight: 600;
+    }
+    .page-info {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 0 0.5rem;
+    }
+    footer {
+      margin-top: 1.25rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+    @media (max-width: 640px) {
+      body { padding: 0.75rem; }
+      h1 { font-size: 1.1rem; }
+      input[type="search"] { width: 100%; }
+      table { font-size: 0.7rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Indonesian Stocks Financial Data</h1>
+        <div class="subtitle">9-Month 2026 vs 9-Month 2025 · Revenue, Profit, Valuation Metrics</div>
+      </div>
+      <div class="controls">
+        <input type="search" id="search" placeholder="Search ticker or company..." autocomplete="off">
+        <select id="sectorFilter">
+          <option value="">All Sectors</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="note">
+      <span><strong>IDR</strong> – in million</span>
+      <span><strong>USD</strong> – in thousand</span>
+      <span><strong>Note:</strong> 9M26 data is still partial (companies that have reported so far)</span>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="table-wrapper">
+      <table id="stockTable">
+        <thead>
+          <tr id="headerRow"></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+    <footer>
+      Data sourced from public Google Sheet · Sort by clicking column headers · 20 rows per page
+    </footer>
+  </div>
+
+  <script>
+    const rawData = [{"Ticker": "EAST", "Company Name": "Eastparc Hotel Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 9M26": "64,941", "Revenue 9M25": "66,955", "Net Profit 9M26": "22,795", "Net Profit 9M25": "20,984", "Last Prc": "87", "PER": "11.8", "PBV": "0.8", "ROA": "6.30%", "ROE": "6.70%"}, {"Ticker": "WSBP", "Company Name": "Waskita Beton Precast Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 9M26": "1,077,593", "Revenue 9M25": "1,168,165", "Net Profit 9M26": "-410,774", "Net Profit 9M25": "-324,219", "Last Prc": "14", "PER": "-1.5", "PBV": "-0.3", "ROA": "-19.00%", "ROE": "23.10%"}, {"Ticker": "DEWA", "Company Name": "Darma Henwa Tbk", "Sector": "ENRG", "Currency": "IDR", "Revenue 9M26": "5,102,015", "Revenue 9M25": "4,650,366", "Net Profit 9M26": "513,084", "Net Profit 9M25": "239,144", "Last Prc": "268", "PER": "15.9", "PBV": "1.3", "ROA": "3.80%", "ROE": "8.30%"}, {"Ticker": "WSKT", "Company Name": "Waskita Karya (Persero) Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 9M26": "8,125,390", "Revenue 9M25": "5,285,384", "Net Profit 9M26": "-2,871,993", "Net Profit 9M25": "-3,174,737", "Last Prc": "202", "PER": "-1.5", "PBV": "-1.7", "ROA": "-5.20%", "ROE": "114.50%"}, {"Ticker": "DIGI", "Company Name": "Arkadia Digital Media Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 9M26": "26,477", "Revenue 9M25": "27,949", "Net Profit 9M26": "-730", "Net Profit 9M25": "-2,791", "Last Prc": "29", "PER": "-48.4", "PBV": "-10.2", "ROA": "-5.80%", "ROE": "21.10%"}, {"Ticker": "ADCP", "Company Name": "Adhi Commuter Properti Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 9M26": "120,753", "Revenue 9M25": "165,544", "Net Profit 9M26": "-68,331", "Net Profit 9M25": "-4,853", "Last Prc": "50", "PER": "-12.2", "PBV": "3.2", "ROA": "-1.80%", "ROE": "-26.10%"}, {"Ticker": "MSIE", "Company Name": "Multisarana Intan Eduka Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 9M26": "5,588", "Revenue 9M25": "5,083", "Net Profit 9M26": "1,055", "Net Profit 9M25": "-385", "Last Prc": "94", "PER": "97.5", "PBV": "1.2", "ROA": "1.10%", "ROE": "1.20%"}, {"Ticker": "PPRO", "Company Name": "PP Properti Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 9M26": "251,297", "Revenue 9M25": "230,973", "Net Profit 9M26": "-291,063", "Net Profit 9M25": "-37,027", "Last Prc": "15", "PER": "-2.4", "PBV": "0.2", "ROA": "-3.70%", "ROE": "-7.30%"}, {"Ticker": "PPRE", "Company Name": "PP Presisi Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 9M26": "3,327,561", "Revenue 9M25": "2,771,440", "Net Profit 9M26": "-161,614", "Net Profit 9M25": "104,976", "Last Prc": "77", "PER": "-3.7", "PBV": "0.8", "ROA": "-3.40%", "ROE": "-23.20%"}, {"Ticker": "PTPP", "Company Name": "PP (Persero) Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 9M26": "9,373,871", "Revenue 9M25": "10,736,545", "Net Profit 9M26": "259,966", "Net Profit 9M25": "5,559", "Last Prc": "161", "PER": "4.9", "PBV": "0.5", "ROA": "0.80%", "ROE": "10.10%"}, {"Ticker": "BPFI", "Company Name": "Woori Finance Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 9M26": "473,737", "Revenue 9M25": "332,700", "Net Profit 9M26": "97,806", "Net Profit 9M25": "51,813", "Last Prc": "240", "PER": "8.9", "PBV": "0.5", "ROA": "3.80%", "ROE": "10.50%"}, {"Ticker": "FORE", "Company Name": "Fore Kopi Indonesia Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 9M26": "1,597,166", "Revenue 9M25": "1,041,753", "Net Profit 9M26": "90,007", "Net Profit 9M25": "60,107", "Last Prc": "605", "PER": "-20.2", "PBV": "0.6", "ROA": "8.70%", "ROE": "15.60%"}, {"Ticker": "ARNA", "Company Name": "Arwana Citramulia Tbk.", "Sector": "INDU", "Currency": "IDR", "Revenue 9M26": "2,512,402", "Revenue 9M25": "2,173,867", "Net Profit 9M26": "369,625", "Net Profit 9M25": "302,108", "Last Prc": "510", "PER": "7.2", "PBV": "1.9", "ROA": "16.50%", "ROE": "25.70%"}, {"Ticker": "DMAS", "Company Name": "Puradelta Lestari Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 9M26": "2,647,702", "Revenue 9M25": "779,583", "Net Profit 9M26": "1,490,970", "Net Profit 9M25": "525,141", "Last Prc": "214", "PER": "5.2", "PBV": "1.4", "ROA": "23.50%", "ROE": "27.20%"}, {"Ticker": "BOBA", "Company Name": "Formosa Ingredient Factory Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 9M26": "160,045", "Revenue 9M25": "132,838", "Net Profit 9M26": "17,199", "Net Profit 9M25": "16,705", "Last Prc": "177", "PER": "8.9", "PBV": "1.2", "ROA": "10.50%", "ROE": "13.10%"}, {"Ticker": "AXIO", "Company Name": "Tera Data Indonusa Tbk.", "Sector": "TECH", "Currency": "IDR", "Revenue 9M26": "1,358,620", "Revenue 9M25": "1,093,778", "Net Profit 9M26": "61,030", "Net Profit 9M25": "33,234", "Last Prc": "135", "PER": "9.7", "PBV": "1.4", "ROA": "5.70%", "ROE": "14.80%"}, {"Ticker": "HELI", "Company Name": "Jaya Trishindo Tbk.", "Sector": "TLOG", "Currency": "IDR", "Revenue 9M26": "117,324", "Revenue 9M25": "118,694", "Net Profit 9M26": "4,475", "Net Profit 9M25": "15,590", "Last Prc": "193", "PER": "26.9", "PBV": "1.7", "ROA": "2.70%", "ROE": "6.40%"}, {"Ticker": "DCII", "Company Name": "DCI Indonesia Tbk.", "Sector": "TECH", "Currency": "IDR", "Revenue 9M26": "2,528,326", "Revenue 9M25": "1,922,859", "Net Profit 9M26": "919,841", "Net Profit 9M25": "824,985", "Last Prc": "181,000", "PER": "351.8", "PBV": "89.6", "ROA": "12.20%", "ROE": "25.50%"}, {"Ticker": "PGUN", "Company Name": "Pradiksi Gunatama Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 9M26": "566,100", "Revenue 9M25": "537,831", "Net Profit 9M26": "135,443", "Net Profit 9M25": "101,434", "Last Prc": "8,475", "PER": "269.3", "PBV": "24.2", "ROA": "7.10%", "ROE": "9.00%"}, {"Ticker": "AIMS", "Company Name": "Artha Mahiya Investama Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 9M26": "928", "Revenue 9M25": "1,279", "Net Profit 9M26": "-706", "Net Profit 9M25": "-173", "Last Prc": "700", "PER": "-163.6", "PBV": "3,553.30", "ROA": "-21.20%", "ROE": "-2172.10%"}, {"Ticker": "KDTN", "Company Name": "Puri Sentul Permai Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 9M26": "31,337", "Revenue 9M25": "23,765", "Net Profit 9M26": "3,535", "Net Profit 9M25": "635", "Last Prc": "292", "PER": "77.4", "PBV": "5.1", "ROA": "6.20%", "ROE": "6.60%"}, {"Ticker": "SHID", "Company Name": "Hotel Sahid Jaya International Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 9M26": "80,249", "Revenue 9M25": "72,781", "Net Profit 9M26": "-20,796", "Net Profit 9M25": "-55,189", "Last Prc": "695", "PER": "-28.1", "PBV": "1.1", "ROA": "-2.20%", "ROE": "-4.00%"}, {"Ticker": "YULE", "Company Name": "Yulie Sekuritas Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 9M26": "43,670", "Revenue 9M25": "41,354", "Net Profit 9M26": "22,684", "Net Profit 9M25": "17,860", "Last Prc": "3,570", "PER": "187.4", "PBV": "8", "ROA": "2.90%", "ROE": "4.30%"}, {"Ticker": "UNVR", "Company Name": "Unilever Indonesia Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 9M26": "25,751,517", "Revenue 9M25": "24,030,435", "Net Profit 9M26": "4,201,089", "Net Profit 9M25": "3,335,249", "Last Prc": "1,400", "PER": "9.5", "PBV": "12.7", "ROA": "30.80%", "ROE": "133.20%"}, {"Ticker": "HALO", "Company Name": "Haloni Jane Tbk.", "Sector": "HLTH", "Currency": "IDR", "Revenue 9M26": "158,710", "Revenue 9M25": "157,991", "Net Profit 9M26": "20,521", "Net Profit 9M25": "7,885", "Last Prc": "61", "PER": "13.6", "PBV": "1.4", "ROA": "8.10%", "ROE": "10.60%"}, {"Ticker": "PJAA", "Company Name": "Pembangunan Jaya Ancol Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 9M26": "781,774", "Revenue 9M25": "798,529", "Net Profit 9M26": "25,354", "Net Profit 9M25": "58,625", "Last Prc": "422", "PER": "20", "PBV": "0.4", "ROA": "1.00%", "ROE": "1.90%"}, {"Ticker": "PAMG", "Company Name": "Bima Sakti Pertiwi Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 9M26": "33,697", "Revenue 9M25": "37,770", "Net Profit 9M26": "-2,561", "Net Profit 9M25": "965", "Last Prc": "47", "PER": "-43", "PBV": "0.3", "ROA": "-0.60%", "ROE": "-0.80%"}, {"Ticker": "GUNA", "Company Name": "Gunanusa Eramandiri Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 9M26": "1,493,363", "Revenue 9M25": "1,254,064", "Net Profit 9M26": "57,030", "Net Profit 9M25": "48,015", "Last Prc": "208", "PER": "6.8", "PBV": "0.8", "ROA": "5.60%", "ROE": "11.90%"}, {"Ticker": "ASDM", "Company Name": "Asuransi Dayin Mitra Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 9M26": "1,259,227", "Revenue 9M25": "1,049,396", "Net Profit 9M26": "15,594", "Net Profit 9M25": "13,788", "Last Prc": "484", "PER": "4.8", "PBV": "-0.6", "ROA": "2.00%", "ROE": "5.70%"}, {"Ticker": "MYTX", "Company Name": "Asia Pacific Investama Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 9M26": "793,253", "Revenue 9M25": "762,652", "Net Profit 9M26": "49,951", "Net Profit 9M25": "11,139", "Last Prc": "41", "PER": "2.8", "PBV": "0.4", "ROA": "1.90%", "ROE": "-12.20%"}, {"Ticker": "AKRA", "Company Name": "AKR Corporindo Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 9M26": "46,531,376", "Revenue 9M25": "32,395,710", "Net Profit 9M26": "2,211,203", "Net Profit 9M25": "1,650,140", "Last Prc": "1,390", "PER": "9.5", "PBV": "2.2", "ROA": "7.60%", "ROE": "23.10%"}, {"Ticker": "BOLT", "Company Name": "Garuda Metalindo Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 9M26": "1,420,850", "Revenue 9M25": "1,257,736", "Net Profit 9M26": "116,742", "Net Profit 9M25": "107,759", "Last Prc": "760", "PER": "11.4", "PBV": "2", "ROA": "9.10%", "ROE": "17.40%"}, {"Ticker": "BTPS", "Company Name": "Bank BTPN Syariah Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 9M26": "3,863,098", "Revenue 9M25": "3,924,133", "Net Profit 9M26": "1,011,801", "Net Profit 9M25": "945,666", "Last Prc": "1,000", "PER": "5.7", "PBV": "0.7", "ROA": "5.60%", "ROE": "12.70%"}, {"Ticker": "CFIN", "Company Name": "Clipan Finance Indonesia Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 9M26": "1,121,307", "Revenue 9M25": "1,228,201", "Net Profit 9M26": "153,648", "Net Profit 9M25": "135,659", "Last Prc": "348", "PER": "6.8", "PBV": "0.2", "ROA": "2.40%", "ROE": "3.60%"}, {"Ticker": "IPCC", "Company Name": "Indonesia Kendaraan Terminal Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 9M26": "645,478", "Revenue 9M25": "660,240", "Net Profit 9M26": "177,179", "Net Profit 9M25": "190,297", "Last Prc": "1,020", "PER": "7.9", "PBV": "1.3", "ROA": "11.90%", "ROE": "17.10%"}, {"Ticker": "ADHI", "Company Name": "Adhi Karya (Persero) Tbk.", "Sector": "INFR", "Currency": "IDR", "Revenue 9M26": "5,373,683", "Revenue 9M25": "5,654,295", "Net Profit 9M26": "15,343", "Net Profit 9M25": "4,421", "Last Prc": "133", "PER": "54.7", "PBV": "0.4", "ROA": "0.10%", "ROE": "0.70%"}, {"Ticker": "PTMR", "Company Name": "Master Print Tbk.", "Sector": "BSIC", "Currency": "IDR", "Revenue 9M26": "89,827", "Revenue 9M25": "97,309", "Net Profit 9M26": "9,196", "Net Profit 9M25": "-10,934", "Last Prc": "374", "PER": "58.2", "PBV": "8.7", "ROA": "9.20%", "ROE": "15.00%"}, {"Ticker": "BUKA", "Company Name": "Bukalapak.com Tbk.", "Sector": "TECH", "Currency": "IDR", "Revenue 9M26": "5,640,835", "Revenue 9M25": "4,726,619", "Net Profit 9M26": "-885,890", "Net Profit 9M25": "2,907,768", "Last Prc": "109", "PER": "-8.5", "PBV": "0.4", "ROA": "-4.70%", "ROE": "-4.90%"}, {"Ticker": "VTNY", "Company Name": "Venteny Fortuna International Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 9M26": "155,707", "Revenue 9M25": "136,621", "Net Profit 9M26": "1,504", "Net Profit 9M25": "10,036", "Last Prc": "46", "PER": "143.7", "PBV": "0.7", "ROA": "0.10%", "ROE": "0.50%"}, {"Ticker": "CBPE", "Company Name": "Citra Buana Prasida Tbk.", "Sector": "PPTY", "Currency": "IDR", "Revenue 9M26": "76,547", "Revenue 9M25": "58,864", "Net Profit 9M26": "46,258", "Net Profit 9M25": "26,899", "Last Prc": "520", "PER": "11.4", "PBV": "1.9", "ROA": "14.60%", "ROE": "16.60%"}, {"Ticker": "UNSP", "Company Name": "Bakrie Sumatera Plantations Tbk.", "Sector": "CNCY", "Currency": "IDR", "Revenue 9M26": "2,215,217", "Revenue 9M25": "1,869,095", "Net Profit 9M26": "-43,470", "Net Profit 9M25": "-63,468", "Last Prc": "290", "PER": "-85.1", "PBV": "1.8", "ROA": "-0.80%", "ROE": "-2.10%"}, {"Ticker": "RGAS", "Company Name": "Kian Santang Muliatama Tbk.", "Sector": "ENRG", "Currency": "IDR", "Revenue 9M26": "83,034", "Revenue 9M25": "175,236", "Net Profit 9M26": "3,870", "Net Profit 9M25": "4,009", "Last Prc": "76", "PER": "21.5", "PBV": "1", "ROA": "3.10%", "ROE": "4.90%"}, {"Ticker": "OCAP", "Company Name": "Onix Capital Tbk.", "Sector": "FINC", "Currency": "IDR", "Revenue 9M26": "-", "Revenue 9M25": "-", "Net Profit 9M26": "-25,339", "Net Profit 9M25": "-22,414", "Last Prc": "159", "PER": "-1.2", "PBV": "-0.1", "ROA": "-555.70%", "ROE": "11.20%"}, {"Ticker": "MKNT", "Company Name": "Mitra Komunikasi Nusantara Tbk.", "Sector": "CCYL", "Currency": "IDR", "Revenue 9M26": "312,699", "Revenue 9M25": "3,689", "Net Profit 9M26": "15,158", "Net Profit 9M25": "-1,535", "Last Prc": "6", "PER": "1.6", "PBV": "5.8", "ROA": "1.40%", "ROE": "357.10%"}];
+
+    const ROWS_PER_PAGE = 20;
+    let currentData = [...rawData];
+    let currentPage = 1;
+    let sortCol = null;
+    let sortAsc = true;
+
+    const tbody = document.getElementById('tableBody');
+    const headerRow = document.getElementById('headerRow');
+    const searchInput = document.getElementById('search');
+    const sectorFilter = document.getElementById('sectorFilter');
+    const statsEl = document.getElementById('stats');
+    const paginationEl = document.getElementById('pagination');
+
+    const columnConfig = [
+      { key: 'Ticker', label: 'Ticker', align: 'center' },
+      { key: 'Company Name', label: 'Company Name', align: 'left' },
+      { key: 'Sector', label: 'Sector', align: 'center' },
+      { key: 'Currency', label: 'Currency', align: 'center' },
+      { key: 'Revenue 9M26', label: 'Revenue 9M26', align: 'right' },
+      { key: 'Revenue 9M25', label: 'Revenue 9M25', align: 'right' },
+      { key: '_revDelta', label: '', align: 'center', isDelta: true, type: 'rev' },
+      { key: 'Net Profit 9M26', label: 'Net Profit 9M26', align: 'right' },
+      { key: 'Net Profit 9M25', label: 'Net Profit 9M25', align: 'right' },
+      { key: '_profitDelta', label: '', align: 'center', isDelta: true, type: 'profit' },
+      { key: 'Last Prc', label: 'Last Prc', align: 'right' },
+      { key: 'PER', label: 'PER', align: 'right' },
+      { key: 'PBV', label: 'PBV', align: 'right' },
+      { key: 'ROA', label: 'ROA', align: 'right' },
+      { key: 'ROE', label: 'ROE', align: 'right' },
+    ];
+
+    headerRow.innerHTML = columnConfig.map(col => {
+      const cls = col.align === 'center' ? 'center' : (col.align === 'right' ? 'right' : '');
+      return `<th class="${cls}" data-col="${col.key}">${col.label}</th>`;
+    }).join('');
+
+    const sectors = [...new Set(rawData.map(r => r.Sector).filter(Boolean))].sort();
+    sectors.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      sectorFilter.appendChild(opt);
+    });
+
+    function parseNum(val) {
+      if (!val || val === '-' || val === '') return null;
+      const cleaned = String(val).replace(/[",]/g, '').trim();
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? null : num;
+    }
+
+    function getDeltaIcon(curr, prev) {
+      const a = parseNum(curr);
+      const b = parseNum(prev);
+      if (a === null || b === null) return '<span class="arrow-flat">●</span>';
+      if (a > b) return '<span class="arrow-up">▲</span>';
+      if (a < b) return '<span class="arrow-down">▼</span>';
+      return '<span class="arrow-flat">●</span>';
+    }
+
+    function formatNumber(val) {
+      if (!val || val === '-' || val === '') return '—';
+      return val;
+    }
+
+    function formatPercent(val) {
+      if (!val || val === '-' || val === '') return '—';
+      const cleaned = String(val).replace(/%/g, '').trim();
+      const num = parseFloat(cleaned);
+      if (isNaN(num)) return val;
+      return num.toFixed(1) + '%';
+    }
+
+    function isNegative(val) {
+      if (!val) return false;
+      const cleaned = String(val).replace(/[",%]/g, '');
+      return cleaned.startsWith('-');
+    }
+
+    function getPageData() {
+      const start = (currentPage - 1) * ROWS_PER_PAGE;
+      return currentData.slice(start, start + ROWS_PER_PAGE);
+    }
+
+    function totalPages() {
+      return Math.max(1, Math.ceil(currentData.length / ROWS_PER_PAGE));
+    }
+
+    function renderTable() {
+      const pageData = getPageData();
+      tbody.innerHTML = '';
+
+      pageData.forEach(row => {
+        const tr = document.createElement('tr');
+        let cells = '';
+
+        columnConfig.forEach(col => {
+          if (col.isDelta) {
+            if (col.type === 'rev') {
+              cells += `<td class="center">${getDeltaIcon(row['Revenue 9M26'], row['Revenue 9M25'])}</td>`;
+            } else {
+              cells += `<td class="center">${getDeltaIcon(row['Net Profit 9M26'], row['Net Profit 9M25'])}</td>`;
+            }
+          } else if (col.key === 'Ticker') {
+            cells += `<td class="center ticker">${row.Ticker || ''}</td>`;
+          } else if (col.key === 'Company Name') {
+            cells += `<td class="company" title="${row['Company Name'] || ''}">${row['Company Name'] || ''}</td>`;
+          } else if (col.key === 'Sector' || col.key === 'Currency') {
+            cells += `<td class="center">${row[col.key] || ''}</td>`;
+          } else if (col.key === 'ROA' || col.key === 'ROE') {
+            cells += `<td class="right ${isNegative(row[col.key]) ? 'negative' : ''}">${formatPercent(row[col.key])}</td>`;
+          } else if (col.key === 'Net Profit 9M26' || col.key === 'Net Profit 9M25') {
+            cells += `<td class="right ${isNegative(row[col.key]) ? 'negative' : 'positive'}">${formatNumber(row[col.key])}</td>`;
+          } else {
+            cells += `<td class="right">${formatNumber(row[col.key])}</td>`;
+          }
+        });
+
+        tr.innerHTML = cells;
+        tbody.appendChild(tr);
+      });
+
+      const profitable = currentData.filter(r => !isNegative(r['Net Profit 9M26']) && r['Net Profit 9M26'] && r['Net Profit 9M26'] !== '-').length;
+      statsEl.innerHTML = `
+        <div class="stat">Showing <strong>${pageData.length}</strong> of <strong>${currentData.length}</strong> stocks (filtered from ${rawData.length})</div>
+        <div class="stat">Profitable (9M26): <strong style="color:var(--green)">${profitable}</strong></div>
+        <div class="stat">Loss-making: <strong style="color:var(--red)">${currentData.length - profitable}</strong></div>
+      `;
+
+      renderPagination();
+    }
+
+    function renderPagination() {
+      const total = totalPages();
+      let html = '';
+
+      html += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Prev</button>`;
+
+      const maxVisible = 7;
+      let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let end = Math.min(total, start + maxVisible - 1);
+      if (end - start + 1 < maxVisible) {
+        start = Math.max(1, end - maxVisible + 1);
+      }
+
+      if (start > 1) {
+        html += `<button onclick="goToPage(1)">1</button>`;
+        if (start > 2) html += `<span class="page-info">…</span>`;
+      }
+
+      for (let i = start; i <= end; i++) {
+        html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      if (end < total) {
+        if (end < total - 1) html += `<span class="page-info">…</span>`;
+        html += `<button onclick="goToPage(${total})">${total}</button>`;
+      }
+
+      html += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === total ? 'disabled' : ''}>Next ›</button>`;
+      html += `<span class="page-info">Page ${currentPage} of ${total}</span>`;
+
+      paginationEl.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      const total = totalPages();
+      if (page < 1 || page > total) return;
+      currentPage = page;
+      renderTable();
+      document.querySelector('.table-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function applyFilters() {
+      const q = searchInput.value.toLowerCase().trim();
+      const sector = sectorFilter.value;
+
+      currentData = rawData.filter(row => {
+        const matchSearch = !q || 
+          (row.Ticker || '').toLowerCase().includes(q) ||
+          (row['Company Name'] || '').toLowerCase().includes(q);
+        const matchSector = !sector || row.Sector === sector;
+        return matchSearch && matchSector;
+      });
+
+      currentPage = 1;
+
+      if (sortCol) {
+        sortData(sortCol, false);
+      } else {
+        renderTable();
+      }
+    }
+
+    function sortData(col, toggle = true) {
+      if (col === '_revDelta' || col === '_profitDelta') return;
+
+      if (toggle) {
+        if (sortCol === col) sortAsc = !sortAsc;
+        else { sortCol = col; sortAsc = true; }
+      }
+
+      document.querySelectorAll('th').forEach(th => {
+        th.classList.remove('sorted-asc', 'sorted-desc');
+        if (th.dataset.col === col) {
+          th.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+        }
+      });
+
+      currentData.sort((a, b) => {
+        let va = a[col] || '';
+        let vb = b[col] || '';
+
+        if (col === 'ROA' || col === 'ROE') {
+          va = parseFloat(String(va).replace(/%/g, '')) || 0;
+          vb = parseFloat(String(vb).replace(/%/g, '')) || 0;
+          return sortAsc ? va - vb : vb - va;
+        }
+
+        const na = parseFloat(String(va).replace(/[",%]/g, ''));
+        const nb = parseFloat(String(vb).replace(/[",%]/g, ''));
+
+        if (!isNaN(na) && !isNaN(nb)) {
+          return sortAsc ? na - nb : nb - na;
+        }
+        va = String(va).toLowerCase();
+        vb = String(vb).toLowerCase();
+        if (va < vb) return sortAsc ? -1 : 1;
+        if (va > vb) return sortAsc ? 1 : -1;
+        return 0;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    sectorFilter.addEventListener('change', applyFilters);
+
+    document.querySelectorAll('th').forEach(th => {
+      th.addEventListener('click', () => sortData(th.dataset.col));
+    });
+
+    renderTable();
+  </script>
+</body>
+</html>
